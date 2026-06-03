@@ -162,43 +162,42 @@ if uploaded_file is not None:
                 mime="image/png"
             )
 
-        '''
-        with tab2:
-            col1, col2 = st.columns(2)
-            with col1:
-                st.subheader("1. Tensiones Fase-Neutro (277V Nominal)")
-                st.line_chart(df, x='FechaHora', y=['Tensión L1 Med', 'Tensión L2 Med', 'Tensión L3 Med'], color=["#FF4B4B", "#00F4B4", "#004BFF"])
-            with col2:
-                st.subheader("2. Corrientes por Fase y Neutro")
-                st.line_chart(df, x='FechaHora', y=['Corriente L1 Med', 'Corriente L2 Med', 'Corriente L3 Med', 'Corriente N Med'], color=["#FF4B4B", "#00F4B4", "#004BFF", "#A020F0"])
-            
-            col3, col4 = st.columns(2)
-            with col3:
-                st.subheader("3. THD de Tensión (%)")
-                st.line_chart(df, x='FechaHora', y=['THD V L1 Med', 'THD V L2 Med', 'THD V L3 Med'], color=["#FF4B4B", "#00F4B4", "#004BFF"])
-            with col4:
-                st.subheader("4. THD de Corriente (%)")
-                st.line_chart(df, x='FechaHora', y=['THD A L1 Med', 'THD A L2 Med', 'THD A L3 Med', 'THD A N Med'], color=["#FF4B4B", "#00F4B4", "#004BFF", "#A020F0"])
+#       # --- TAB 2: INTERACTIVE STREAMLIT CHARTS ---
+#       with tab2:
+#           col1, col2 = st.columns(2)
+#           with col1:
+#               st.subheader("1. Tensiones Fase-Neutro (277V Nominal)")
+#               st.line_chart(df, x='FechaHora', y=['Tensión L1 Med', 'Tensión L2 Med', 'Tensión L3 Med'], color=["#FF4B4B", "#00F4B4", "#004BFF"])
+#           with col2:
+#               st.subheader("2. Corrientes por Fase y Neutro")
+#               st.line_chart(df, x='FechaHora', y=['Corriente L1 Med', 'Corriente L2 Med', 'Corriente L3 Med', 'Corriente N Med'], color=["#FF4B4B", "#00F4B4", "#004BFF", "#A020F0"])
+#           
+#           col3, col4 = st.columns(2)
+#           with col3:
+#               st.subheader("3. THD de Tensión (%)")
+#               st.line_chart(df, x='FechaHora', y=['THD V L1 Med', 'THD V L2 Med', 'THD V L3 Med'], color=["#FF4B4B", "#00F4B4", "#004BFF"])
+#           with col4:
+#               st.subheader("4. THD de Corriente (%)")
+#               st.line_chart(df, x='FechaHora', y=['THD A L1 Med', 'THD A L2 Med', 'THD A L3 Med', 'THD A N Med'], color=["#FF4B4B", "#00F4B4", "#004BFF", "#A020F0"])
 
-            col5, col6 = st.columns(2)
-            with col5:
-                st.subheader("5. Carga del Transformador (%)")
-                st.line_chart(df, x='FechaHora', y='Carga_%', color="#00008B")
-            with col6:
-                st.subheader("6. Factor de Potencia Total")
-                st.line_chart(df, x='FechaHora', y='Factor de Potencia Total Med', color="#006400")
+#           col5, col6 = st.columns(2)
+#            with col5:
+#                st.subheader("5. Carga del Transformador (%)")
+#                st.line_chart(df, x='FechaHora', y='Carga_%', color="#00008B")
+#           with col6:
+#               st.subheader("6. Factor de Potencia Total")
+#               st.line_chart(df, x='FechaHora', y='Factor de Potencia Total Med', color="#006400")
 
-            col7, col8 = st.columns(2)
-            with col7:
-                st.subheader("7. Desbalance de Tensión (%)")
-                st.line_chart(df, x='FechaHora', y='Desbalance_V_%', color="#8B0000")
-            with col8:
-                # Add safely inside layout processing
-                if 'Potencia de distorsión Total Med' in df.columns:
-                    df['Potencia_Distorsion_kW'] = df['Potencia de distorsión Total Med'] / 1000
-                    st.subheader("8. Potencia de Distorsión (kW)")
-                    st.line_chart(df, x='FechaHora', y='Potencia_Distorsion_kW', color="#800080")
-        '''
+#           col7, col8 = st.columns(2)
+#            with col7:
+#                st.subheader("7. Desbalance de Tensión (%)")
+#                st.line_chart(df, x='FechaHora', y='Desbalance_V_%', color="#8B0000")
+#           with col8:
+#               # Add safely inside layout processing
+#               if 'Potencia de distorsión Total Med' in df.columns:
+#                   df['Potencia_Distorsion_kW'] = df['Potencia de distorsión Total Med'] / 1000
+#                   st.subheader("8. Potencia de Distorsión (kW)")
+#                   st.line_chart(df, x='FechaHora', y='Potencia_Distorsion_kW', color="#800080")
 else:
     # Fallback view shown before a user uploads anything
     st.title("⚡ Análisis de Calidad de Energía")
