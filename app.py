@@ -161,6 +161,7 @@ if uploaded_file is not None:
                 mime="image/png"
             )
 
+        '''
         # --- TAB 2: INTERACTIVE STREAMLIT CHARTS ---
         with tab2:
             col1, col2 = st.columns(2)
@@ -197,6 +198,7 @@ if uploaded_file is not None:
                     df['Potencia_Distorsion_kW'] = df['Potencia de distorsión Total Med'] / 1000
                     st.subheader("8. Potencia de Distorsión (kW)")
                     st.line_chart(df, x='FechaHora', y='Potencia_Distorsion_kW', color="#800080")
+        '''
 else:
     # Fallback view shown before a user uploads anything
     st.title("⚡ Análisis de Calidad de Energía")
