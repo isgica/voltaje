@@ -26,11 +26,19 @@ def load_uploaded_data(file_wrapper):
             data = pd.read_excel(file_wrapper)
 
         if 'Fecha' in data.columns and 'Hora' in data.columns:
-            data['FechaHora'] = pd.to_datetime(data['Fecha'].astype(str) + ' ' + data['Hora'].astype(str))
-        
-        # Data Cleaning: Ensure 'FechaHora' is parsed as actual datetime objects
-        if 'FechaHora' in data.columns:
-            data['FechaHora'] = pd.to_datetime(data['FechaHora'])
+            # 1. Combinar en una cadena de texto limpia
+            fecha_hora_str = data['Fecha'].astype(str) + ' ' + data['Hora'].astype(str)
+            
+            # 2. LIMPIEZA: Eliminar la palabra 'ms' y cualquier número pegado a ella al final (ej: "0ms")
+            # Usamos una expresión regular para quitar " [número]ms" al final de la cadena
+            fecha_hora_str = fecha_hora_str.str.replace(r'\s+\d+ms$', '', regex=True)
+            
+            # 3. Convertir ahora sí a Datetime de forma segura
+            data['FechaHora'] = pd.to_datetime(fecha_hora_str, errors='coerce')
+            
+            # Opcional: Avisar si hubo filas imposibles de parsear
+            if data['FechaHora'].isna().any():
+                st.sidebar.warning("⚠️ Algunas filas no pudieron convertirse a fecha y se omitieron.")
             
         return data
     except Exception as e:
