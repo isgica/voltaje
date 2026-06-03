@@ -55,7 +55,8 @@ if uploaded_file is not None:
         I_NOM_TRAFO = 1000 * 1000 / (480 * np.sqrt(3))
 
         st.title("⚡ Análisis de Calidad de Energía")
-        tab1, tab2 = st.tabs(["🖨️ Reporte para Impresión (Matplotlib)", "📊 Cuadro de Mando Interactivo"])
+        tab1 = st.tabs(["🖨️ Reporte para Impresión (Matplotlib)"])
+#        tab1, tab2 = st.tabs(["🖨️ Reporte para Impresión (Matplotlib)", "📊 Cuadro de Mando Interactivo"])
 
 
         # --- TAB 1: MATPLOTLIB STATIC & PRINT VERSION ---
