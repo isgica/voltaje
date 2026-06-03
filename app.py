@@ -163,7 +163,6 @@ if uploaded_file is not None:
             )
 
         '''
-        # --- TAB 2: INTERACTIVE STREAMLIT CHARTS ---
         with tab2:
             col1, col2 = st.columns(2)
             with col1:
@@ -182,17 +181,17 @@ if uploaded_file is not None:
                 st.line_chart(df, x='FechaHora', y=['THD A L1 Med', 'THD A L2 Med', 'THD A L3 Med', 'THD A N Med'], color=["#FF4B4B", "#00F4B4", "#004BFF", "#A020F0"])
 
             col5, col6 = st.columns(2)
-#            with col5:
-#                st.subheader("5. Carga del Transformador (%)")
-#                st.line_chart(df, x='FechaHora', y='Carga_%', color="#00008B")
+            with col5:
+                st.subheader("5. Carga del Transformador (%)")
+                st.line_chart(df, x='FechaHora', y='Carga_%', color="#00008B")
             with col6:
                 st.subheader("6. Factor de Potencia Total")
                 st.line_chart(df, x='FechaHora', y='Factor de Potencia Total Med', color="#006400")
 
             col7, col8 = st.columns(2)
-#            with col7:
-#                st.subheader("7. Desbalance de Tensión (%)")
-#                st.line_chart(df, x='FechaHora', y='Desbalance_V_%', color="#8B0000")
+            with col7:
+                st.subheader("7. Desbalance de Tensión (%)")
+                st.line_chart(df, x='FechaHora', y='Desbalance_V_%', color="#8B0000")
             with col8:
                 # Add safely inside layout processing
                 if 'Potencia de distorsión Total Med' in df.columns:
