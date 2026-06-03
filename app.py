@@ -24,6 +24,9 @@ def load_uploaded_data(file_wrapper):
             data = pd.read_csv(file_wrapper)
         else:
             data = pd.read_excel(file_wrapper)
+
+        if 'Fecha' in data.columns and 'Hora' in data.columns:
+            data['FechaHora'] = pd.to_datetime(data['Fecha'].astype(str) + ' ' + data['Hora'].astype(str))
         
         # Data Cleaning: Ensure 'FechaHora' is parsed as actual datetime objects
         if 'FechaHora' in data.columns:
