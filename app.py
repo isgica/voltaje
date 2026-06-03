@@ -50,7 +50,7 @@ if uploaded_file is not None:
     # Load user data
     df = load_uploaded_data(uploaded_file)
     
-    try
+    try:
         if df is not None:
             # Calculate the Transformer Nominal Current safely
             I_NOM_TRAFO = 1000 * 1000 / (480 * np.sqrt(3))
