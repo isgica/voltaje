@@ -21,7 +21,7 @@ def load_uploaded_data(file_wrapper):
         # Check the file extension to use the correct pandas reader
         if file_wrapper.name.endswith('.csv'):
             # You might need to tweak 'sep' (e.g., sep=';') depending on your CSV format
-            data = pd.read_csv(file_wrapper, sep=';')
+            data = pd.read_csv(file_wrapper, sep=';', decimal=',')
         else:
             data = pd.read_excel(file_wrapper)
 
