@@ -1,133 +1,192 @@
 import streamlit as st
 import pandas as pd
 import numpy as np
+import matplotlib.pyplot as plt
+import io
 
 # 1. Page Configuration
-st.set_page_config(
-    page_title="Dashboard Calidad de Energía", 
-    layout="wide", 
-    initial_sidebar_state="expanded"
+st.set_page_config(page_title="Dashboard Calidad de Energía", layout="wide")
+
+# 2. FILE UPLOADER IN THE SIDEBAR
+st.sidebar.header("📁 Cargar Datos")
+uploaded_file = st.sidebar.file_uploader(
+    "Carga tu archivo de registro (Excel o CSV)", 
+    type=["csv", "xlsx", "xls"]
 )
 
-# --- MOCK DATA GENERATION (Replace with your actual 'df' loading logic) ---
+# 3. MODIFIED DATA LOADING FUNCTION
 @st.cache_data
-def load_data():
-    dates = pd.date_range(start="2026-05-06", end="2026-05-14", freq="15min")
-    n = len(dates)
+def load_uploaded_data(file_wrapper):
+    try:
+        # Check the file extension to use the correct pandas reader
+        if file_wrapper.name.endswith('.csv'):
+            # You might need to tweak 'sep' (e.g., sep=';') depending on your CSV format
+            data = pd.read_csv(file_wrapper)
+        else:
+            data = pd.read_excel(file_wrapper)
+        
+        # Data Cleaning: Ensure 'FechaHora' is parsed as actual datetime objects
+        if 'FechaHora' in data.columns:
+            data['FechaHora'] = pd.to_datetime(data['FechaHora'])
+            
+        return data
+    except Exception as e:
+        st.sidebar.error(f"Error al leer el archivo: {e}")
+        return None
+
+# --- Main App Logic ---
+if uploaded_file is not None:
+    # Load user data
+    df = load_uploaded_data(uploaded_file)
     
-    # Mathematical setup for constants
-    v_nom = 277
-    i_nom_trafo = 1000 * 1000 / (480 * np.sqrt(3))  # ~1204A
-    
-    data = {
-        'FechaHora': dates,
-        'Tensión L1 Med': np.random.normal(v_nom, 2, n),
-        'Tensión L2 Med': np.random.normal(v_nom, 1.5, n),
-        'Tensión L3 Med': np.random.normal(v_nom, 2.5, n),
-        'Corriente L1 Med': np.random.uniform(400, 850, n),
-        'Corriente L2 Med': np.random.uniform(420, 830, n),
-        'Corriente L3 Med': np.random.uniform(410, 870, n),
-        'Corriente N Med': np.random.uniform(15, 60, n),
-        'THD V L1 Med': np.random.uniform(1, 4.5, n),
-        'THD V L2 Med': np.random.uniform(1.2, 4.2, n),
-        'THD V L3 Med': np.random.uniform(1.1, 5.5, n),
-        'THD A L1 Med': np.random.uniform(12, 22, n),
-        'THD A L2 Med': np.random.uniform(14, 24, n),
-        'THD A L3 Med': np.random.uniform(13, 26, n),
-        'THD A N Med': np.random.uniform(20, 38, n),
-        'Carga_%': np.random.uniform(35, 75, n),
-        'Factor de Potencia Total Med': np.random.uniform(0.84, 0.96, n),
-        'Desbalance_V_%': np.random.uniform(0.4, 2.8, n),
-        'Potencia de distorsión Total Med': np.random.uniform(4000, 18000, n)
-    }
-    return pd.DataFrame(data), i_nom_trafo
+    if df is not None:
+        # Calculate the Transformer Nominal Current safely
+        I_NOM_TRAFO = 1000 * 1000 / (480 * np.sqrt(3))
 
-df, I_NOM_TRAFO = load_data()
-# --------------------------------------------------------------------------
+        st.title("⚡ Análisis de Calidad de Energía")
+        tab1, tab2 = st.tabs(["📊 Cuadro de Mando Interactivo", "🖨️ Reporte para Impresión (Matplotlib)"])
 
-# 2. Header Information
-st.title("⚡ ANÁLISIS COMPLETO - TRANSFORMADOR 1000 kVA")
-st.caption("🏥 CLÍNICA PRIVADA | Fluke 1735 | Rejistro de 7.7 días (06-14 Mayo 2026)")
-st.markdown("---")
+        # --- TAB 1: INTERACTIVE STREAMLIT CHARTS ---
+        with tab1:
+            col1, col2 = st.columns(2)
+            with col1:
+                st.subheader("1. Tensiones Fase-Neutro (277V Nominal)")
+                st.line_chart(df, x='FechaHora', y=['Tensión L1 Med', 'Tensión L2 Med', 'Tensión L3 Med'], color=["#FF4B4B", "#00F4B4", "#004BFF"])
+            with col2:
+                st.subheader("2. Corrientes por Fase y Neutro")
+                st.line_chart(df, x='FechaHora', y=['Corriente L1 Med', 'Corriente L2 Med', 'Corriente L3 Med', 'Corriente N Med'], color=["#FF4B4B", "#00F4B4", "#004BFF", "#A020F0"])
+            
+            col3, col4 = st.columns(2)
+            with col3:
+                st.subheader("3. THD de Tensión (%)")
+                st.line_chart(df, x='FechaHora', y=['THD V L1 Med', 'THD V L2 Med', 'THD V L3 Med'], color=["#FF4B4B", "#00F4B4", "#004BFF"])
+            with col4:
+                st.subheader("4. THD de Corriente (%)")
+                st.line_chart(df, x='FechaHora', y=['THD A L1 Med', 'THD A L2 Med', 'THD A L3 Med', 'THD A N Med'], color=["#FF4B4B", "#00F4B4", "#004BFF", "#A020F0"])
 
-# 3. Native Grid Layout (2 columns layout replacing your 4x2 subplot grid)
+            col5, col6 = st.columns(2)
+            with col5:
+                st.subheader("5. Carga del Transformador (%)")
+                st.line_chart(df, x='FechaHora', y='Carga_%', color="#00008B")
+            with col6:
+                st.subheader("6. Factor de Potencia Total")
+                st.line_chart(df, x='FechaHora', y='Factor de Potencia Total Med', color="#006400")
 
-# --- ROW 1 ---
-col1, col2 = st.columns(2)
+            col7, col8 = st.columns(2)
+            with col7:
+                st.subheader("7. Desbalance de Tensión (%)")
+                st.line_chart(df, x='FechaHora', y='Desbalance_V_%', color="#8B0000")
+            with col8:
+                # Add safely inside layout processing
+                if 'Potencia de distorsión Total Med' in df.columns:
+                    df['Potencia_Distorsion_kW'] = df['Potencia de distorsión Total Med'] / 1000
+                    st.subheader("8. Potencia de Distorsión (kW)")
+                    st.line_chart(df, x='FechaHora', y='Potencia_Distorsion_kW', color="#800080")
 
-with col1:
-    st.subheader("1. Tensiones Fase-Neutro (277V Nominal)")
-    st.line_chart(
-        df, 
-        x='FechaHora', 
-        y=['Tensión L1 Med', 'Tensión L2 Med', 'Tensión L3 Med'], 
-        color=["#FF4B4B", "#00F4B4", "#004BFF"] # Red, Green, Blue
-    )
-    st.info("💡 Límites de tolerancia de tensión de diseño: -10% (249V) a +10% (305V)")
 
-with col2:
-    st.subheader("2. Corrientes por Fase y Neutro")
-    st.line_chart(
-        df, 
-        x='FechaHora', 
-        y=['Corriente L1 Med', 'Corriente L2 Med', 'Corriente L3 Med', 'Corriente N Med'],
-        color=["#FF4B4B", "#00F4B4", "#004BFF", "#A020F0"] # Red, Green, Blue, Purple
-    )
-    st.caption(f"Límite de Corriente Nominal del Transformador: **{I_NOM_TRAFO:.0f} A** por fase.")
+        # --- TAB 2: MATPLOTLIB STATIC & PRINT VERSION ---
+        with tab2:
+            st.subheader("Vista Previa del Reporte Estático")
+            
+            fig, axes = plt.subplots(4, 2, figsize=(18, 24))
+            fig.suptitle('ANÁLISIS COMPLETO - TRANSFORMADOR 1000 kVA | CLÍNICA PRIVADA\nFluke 1735', 
+                         fontsize=16, fontweight='bold', y=0.995)
 
-st.markdown("---")
+            # 1. TENSIONES EN EL TIEMPO
+            ax1 = axes[0, 0]
+            ax1.plot(df['FechaHora'], df['Tensión L1 Med'], label='L1', color='red', alpha=0.7, linewidth=0.8)
+            ax1.plot(df['FechaHora'], df['Tensión L2 Med'], label='L2', color='green', alpha=0.7, linewidth=0.8)
+            ax1.plot(df['FechaHora'], df['Tensión L3 Med'], label='L3', color='blue', alpha=0.7, linewidth=0.8)
+            ax1.axhline(y=277, color='black', linestyle='--', linewidth=1, label='Nominal 277V')
+            ax1.set_title('TENSIONES FASE-NEUTRO (277V nominal)', fontweight='bold')
+            ax1.set_ylabel('Voltaje (V)')
+            ax1.legend(loc='upper right', fontsize=8)
+            ax1.grid(True, alpha=0.3)
+            ax1.set_ylim(240, 310)
 
-# --- ROW 2 ---
-col3, col4 = st.columns(2)
+            # 2. CORRIENTES EN EL TIEMPO
+            ax2 = axes[0, 1]
+            ax2.plot(df['FechaHora'], df['Corriente L1 Med'], label='L1', color='red', alpha=0.7, linewidth=0.8)
+            ax2.plot(df['FechaHora'], df['Corriente L2 Med'], label='L2', color='green', alpha=0.7, linewidth=0.8)
+            ax2.plot(df['FechaHora'], df['Corriente L3 Med'], label='L3', color='blue', alpha=0.7, linewidth=0.8)
+            ax2.plot(df['FechaHora'], df['Corriente N Med'], label='Neutro', color='purple', alpha=0.7, linewidth=0.8)
+            ax2.axhline(y=I_NOM_TRAFO, color='black', linestyle='--', linewidth=1, label=f'I nominal trafo: {I_NOM_TRAFO:.0f}A')
+            ax2.set_title('CORRIENTES POR FASE', fontweight='bold')
+            ax2.set_ylabel('Corriente (A)')
+            ax2.legend(loc='upper right', fontsize=8)
+            ax2.grid(True, alpha=0.3)
 
-with col3:
-    st.subheader("3. THD de Tensión (%)")
-    st.line_chart(
-        df, 
-        x='FechaHora', 
-        y=['THD V L1 Med', 'THD V L2 Med', 'THD V L3 Med'],
-        color=["#FF4B4B", "#00F4B4", "#004BFF"]
-    )
-    st.warning("⚠️ Límite recomendado por IEEE 519 es de **5%** para THD-V.")
+            # 3. THD-V
+            ax3 = axes[1, 0]
+            ax3.plot(df['FechaHora'], df['THD V L1 Med'], label='L1', color='red', alpha=0.7, linewidth=0.8)
+            ax3.plot(df['FechaHora'], df['THD V L2 Med'], label='L2', color='green', alpha=0.7, linewidth=0.8)
+            ax3.plot(df['FechaHora'], df['THD V L3 Med'], label='L3', color='blue', alpha=0.7, linewidth=0.8)
+            ax3.axhline(y=5, color='orange', linestyle='--', linewidth=2, label='Límite IEEE 519 (5%)')
+            ax3.set_title('THD DE TENSIÓN (%)', fontweight='bold')
+            ax3.set_ylabel('THD-V (%)')
+            ax3.legend(loc='upper right', fontsize=8)
+            ax3.grid(True, alpha=0.3)
+            ax3.set_ylim(0, 20)
 
-with col4:
-    st.subheader("4. THD de Corriente (%)")
-    st.line_chart(
-        df, 
-        x='FechaHora', 
-        y=['THD A L1 Med', 'THD A L2 Med', 'THD A L3 Med', 'THD A N Med'],
-        color=["#FF4B4B", "#00F4B4", "#004BFF", "#A020F0"]
-    )
-    st.warning("⚠️ Límite objetivo IEEE: **20%** | Nivel crítico: **35%**")
+            # 4. THD-I
+            ax4 = axes[1, 1]
+            ax4.plot(df['FechaHora'], df['THD A L1 Med'], label='L1', color='red', alpha=0.7, linewidth=0.8)
+            ax4.plot(df['FechaHora'], df['THD A L2 Med'], label='L2', color='green', alpha=0.7, linewidth=0.8)
+            ax4.plot(df['FechaHora'], df['THD A L3 Med'], label='L3', color='blue', alpha=0.7, linewidth=0.8)
+            ax4.plot(df['FechaHora'], df['THD A N Med'], label='Neutro', color='purple', alpha=0.7, linewidth=0.8)
+            ax4.set_title('THD DE CORRIENTE (%)', fontweight='bold')
+            ax4.set_ylabel('THD-I (%)')
+            ax4.legend(loc='upper right', fontsize=8)
+            ax4.grid(True, alpha=0.3)
+            ax4.set_ylim(0, 50)
 
-st.markdown("---")
+            # 5. CARGA DEL TRANSFORMADOR
+            ax5 = axes[2, 0]
+            ax5.plot(df['FechaHora'], df['Carga_%'], color='darkblue', linewidth=0.8)
+            ax5.set_title('CARGA DEL TRANSFORMADOR (%)', fontweight='bold')
+            ax5.set_ylabel('Carga (%)')
+            ax5.grid(True, alpha=0.3)
 
-# --- ROW 3 ---
-col5, col6 = st.columns(2)
+            # 6. FACTOR DE POTENCIA
+            ax6 = axes[2, 1]
+            ax6.plot(df['FechaHora'], df['Factor de Potencia Total Med'], color='darkgreen', linewidth=0.8)
+            ax6.set_title('FACTOR DE POTENCIA TOTAL', fontweight='bold')
+            ax6.set_ylabel('FP')
+            ax6.grid(True, alpha=0.3)
+            ax6.set_ylim(0.7, 1.0)
 
-with col5:
-    st.subheader("5. Carga del Transformador (%)")
-    st.line_chart(df, x='FechaHora', y='Carga_%', color="#00008B")
-    st.caption("Límite recomendado de operación segura continua: **80%**")
+            # 7. DESBALANCE DE TENSIÓN
+            ax7 = axes[3, 0]
+            ax7.plot(df['FechaHora'], df['Desbalance_V_%'], color='darkred', linewidth=0.8)
+            ax7.set_title('DESBALANCE DE TENSIÓN (%)', fontweight='bold')
+            ax7.set_ylabel('Desbalance (%)')
+            ax7.grid(True, alpha=0.3)
 
-with col6:
-    st.subheader("6. Factor de Potencia Total")
-    st.line_chart(df, x='FechaHora', y='Factor de Potencia Total Med', color="#006400")
-    st.caption("Objetivo de eficiencia energética: **0.95** | Mínimo normativo regulatorio: **0.85**")
+            # 8. POTENCIA DISTORSIÓN
+            ax8 = axes[3, 1]
+            ax8.plot(df['FechaHora'], df['Potencia de distorsión Total Med']/1000, color='purple', linewidth=0.8)
+            ax8.set_title('POTENCIA DE DISTORSIÓN (kW)', fontweight='bold')
+            ax8.set_ylabel('Potencia distorsión (kW)')
+            ax8.grid(True, alpha=0.3)
 
-st.markdown("---")
+            for ax in axes.flat:
+                plt.setp(ax.get_xticklabels(), rotation=30, ha='right')
 
-# --- ROW 4 ---
-col7, col8 = st.columns(2)
-
-with col7:
-    st.subheader("7. Desbalance de Tensión (%)")
-    st.line_chart(df, x='FechaHora', y='Desbalance_V_%', color="#8B0000")
-    st.caption("Límite estipulado por IEEE: **3%**")
-
-with col8:
-    # Convert W to kW inside the UI loop cleanly
-    df['Potencia_Distorsion_kW'] = df['Potencia de distorsión Total Med'] / 1000
-    st.subheader("8. Potencia de Distorsión (kW)")
-    st.line_chart(df, x='FechaHora', y='Potencia_Distorsion_kW', color="#800080")
-    st.caption("Representación neta de las pérdidas eléctricas debidas a la distorsión armónica.")
+            plt.tight_layout()
+            st.pyplot(fig)
+            
+            img_buffer = io.BytesIO()
+            plt.savefig(img_buffer, format='png', dpi=150, bbox_inches='tight')
+            img_buffer.seek(0)
+            plt.close()
+            
+            st.download_button(
+                label="📥 Descargar Imagen para Imprimir (PNG)",
+                data=img_buffer,
+                file_name="analisis_calidad_energia_reporte.png",
+                mime="image/png"
+            )
+else:
+    # Fallback view shown before a user uploads anything
+    st.title("⚡ Análisis de Calidad de Energía")
+    st.warning("👈 Por favor, carga un archivo Excel (.xlsx/.xls) o CSV en el menú lateral para comenzar a procesar el gráfico.")
