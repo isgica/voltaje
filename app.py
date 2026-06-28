@@ -204,5 +204,5 @@ if uploaded_file is not None:
     
 else:
     # Fallback view shown before a user uploads anything
-    st.title("⚡ Análisis de Calidad de Energía")
+    st.title("⚡ Análisis de Calidad de Energía de William")
     st.warning("👈 Por favor, carga un archivo Excel (.xlsx/.xls) o CSV en el menú lateral para comenzar a procesar el gráfico.")
