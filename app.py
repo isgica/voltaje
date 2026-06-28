@@ -55,7 +55,7 @@ if uploaded_file is not None:
             # Calculate the Transformer Nominal Current safely
             I_NOM_TRAFO = 1000 * 1000 / (480 * np.sqrt(3))
 
-            st.title("⚡ Análisis de Calidad de Energía")
+            st.title("⚡ Análisis de Calidad de Energía de William")
             tab1, *_ = st.tabs(["🖨️ Reporte para Impresión (Matplotlib)"])
     #        tab1, tab2 = st.tabs(["🖨️ Reporte para Impresión (Matplotlib)", "📊 Cuadro de Mando Interactivo"])
 
