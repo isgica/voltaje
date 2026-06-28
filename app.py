@@ -168,12 +168,12 @@ if uploaded_file is not None:
                 ax4.grid(True, alpha=0.3)
                 ax4.set_ylim(0, 50)
 
-    #            # 5. CARGA DEL TRANSFORMADOR
-    #            ax5 = axes[2, 0]
-    #            ax5.plot(df['FechaHora'], df['Carga_%'], color='darkblue', linewidth=0.8)
-    #            ax5.set_title('CARGA DEL TRANSFORMADOR (%)', fontweight='bold')
-    #            ax5.set_ylabel('Carga (%)')
-    #            ax5.grid(True, alpha=0.3)
+                # 5. CARGA DEL TRANSFORMADOR
+                ax5 = axes[2, 0]
+                ax5.plot(df['FechaHora'], df['Carga_%'], color='darkblue', linewidth=0.8)
+                ax5.set_title('CARGA DEL TRANSFORMADOR (%)', fontweight='bold')
+                ax5.set_ylabel('Carga (%)')
+                ax5.grid(True, alpha=0.3)
 
                 # 6. FACTOR DE POTENCIA
                 ax6 = axes[2, 1]
@@ -183,12 +183,12 @@ if uploaded_file is not None:
                 ax6.grid(True, alpha=0.3)
                 ax6.set_ylim(0.7, 1.0)
 
-    #            # 7. DESBALANCE DE TENSIÓN
-    #            ax7 = axes[3, 0]
-    #            ax7.plot(df['FechaHora'], df['Desbalance_V_%'], color='darkred', linewidth=0.8)
-    #            ax7.set_title('DESBALANCE DE TENSIÓN (%)', fontweight='bold')
-    #            ax7.set_ylabel('Desbalance (%)')
-    #            ax7.grid(True, alpha=0.3)
+                # 7. DESBALANCE DE TENSIÓN
+                ax7 = axes[3, 0]
+                ax7.plot(df['FechaHora'], df['Desbalance_V_%'], color='darkred', linewidth=0.8)
+                ax7.set_title('DESBALANCE DE TENSIÓN (%)', fontweight='bold')
+                ax7.set_ylabel('Desbalance (%)')
+                ax7.grid(True, alpha=0.3)
 
                 # 8. POTENCIA DISTORSIÓN
                 ax8 = axes[3, 1]
