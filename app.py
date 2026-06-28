@@ -39,6 +39,58 @@ def load_uploaded_data(file_wrapper):
             # Opcional: Avisar si hubo filas imposibles de parsear
             if data['FechaHora'].isna().any():
                 st.sidebar.warning("⚠️ Algunas filas no pudieron convertirse a fecha y se omitieron.")
+
+            df = data
+            v_nom = 277  # Tensión fase-neutro nominal (480/√3)
+            v_ll_nom = 480  # Tensión línea-línea nominal
+
+            df['V_avg'] = (df['Tensión L1 Med'] + df['Tensión L2 Med'] + df['Tensión L3 Med']) / 3
+            df['V_max_dev'] = df[['Tensión L1 Med', 'Tensión L2 Med', 'Tensión L3 Med']].max(axis=1)
+            df['V_min_dev'] = df[['Tensión L1 Med', 'Tensión L2 Med', 'Tensión L3 Med']].min(axis=1)
+            df['Desbalance_V_%'] = ((df['V_max_dev'] - df['V_min_dev']) / df['V_avg']) * 100
+
+            # 2. Desbalance de corriente
+            df['I_avg'] = (df['Corriente L1 Med'] + df['Corriente L2 Med'] + df['Corriente L3 Med']) / 3
+            df['I_max_dev'] = df[['Corriente L1 Med', 'Corriente L2 Med', 'Corriente L3 Med']].max(axis=1)
+            df['I_min_dev'] = df[['Corriente L1 Med', 'Corriente L2 Med']].min(axis=1)
+            df['Desbalance_I_%'] = ((df['I_max_dev'] - df['I_min_dev']) / df['I_avg']) * 100
+
+            # 3. Corriente neutral (muy importante para armónicos)
+            df['THD_N_Med'] = df['THD A N Med']
+            df['THD_N_Max'] = df['THD A N Max']
+
+            # 4. Variación de tensión respecto a nominal
+            df['Var_V_L1_%'] = ((df['Tensión L1 Med'] - v_nom) / v_nom) * 100
+            df['Var_V_L2_%'] = ((df['Tensión L2 Med'] - v_nom) / v_nom) * 100
+            df['Var_V_L3_%'] = ((df['Tensión L3 Med'] - v_nom) / v_nom) * 100
+
+            # 5. Factor K estimado (simplificado)
+            # Factor K = 1 + (THD_I^2)/100 para estimar sobrecarga por armónicos
+            df['Factor_K_est_L1'] = 1 + (df['THD A L1 Med']**2) / 100
+            df['Factor_K_est_L2'] = 1 + (df['THD A L2 Med']**2) / 100
+            df['Factor_K_est_L3'] = 1 + (df['THD A L3 Med']**2) / 100
+
+            # 6. Carga del transformador (%)
+            s_trafo = 1000  # kVA
+            df['Carga_%'] = (df['Potencia Aparente Total Med'] / 1000 / s_trafo) * 100
+
+            # 7. Flicker estimado (no medido directamente, pero inferimos de variaciones)
+            # Calcular desviación estándar móvil de tensión como proxy de flicker
+            df['Flicker_proxy_L1'] = df['Tensión L1 Med'].rolling(window=12, min_periods=1).std()
+
+
+            # Contar eventos de caída severa de tensión
+            v_dip_threshold = 0.9 * v_nom  # 249.3V (10% below nominal)
+            v_swell_threshold = 1.1 * v_nom  # 304.7V
+
+            dips_l1 = (df['Tensión L1 Min'] < v_dip_threshold).sum()
+            dips_l2 = (df['Tensión L2 Min'] < v_dip_threshold).sum()
+            dips_l3 = (df['Tensión L3 Min'] < v_dip_threshold).sum()
+
+            swells_l1 = (df['Tensión L1 Max'] > v_swell_threshold).sum()
+            swells_l2 = (df['Tensión L2 Max'] > v_swell_threshold).sum()
+            swells_l3 = (df['Tensión L3 Max'] > v_swell_threshold).sum()
+
             
         return data
     except Exception as e:
