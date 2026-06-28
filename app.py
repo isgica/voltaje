@@ -5,7 +5,7 @@ import matplotlib.pyplot as plt
 import io
 
 # 1. Page Configuration
-st.set_page_config(page_title="Dashboard Calidad de Energía", layout="wide")
+st.set_page_config(page_title="Dashboard Calidad de Energía de William", layout="wide")
 
 # 2. FILE UPLOADER IN THE SIDEBAR
 st.sidebar.header("📁 Cargar Datos")
